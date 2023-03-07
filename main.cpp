@@ -109,6 +109,33 @@ void PrintData(Node *&head)
     }
 }
 
+void DeleteData(Node *&head, int index)
+{
+    if (index == 1)
+    {
+        Node *temp = head;
+        head = head->next;
+        delete temp;
+    }
+    else
+    {
+        Node *curr = head;
+        Node *pre = NULL;
+
+        int count = 1;
+        while (count < index)
+        {
+            pre = curr;
+            curr = curr->next;
+            count++;
+        }
+
+        pre->next = curr->next;
+        curr->next = NULL;
+        delete curr;
+    }
+}
+
 void PrintCatalogMessage()
 {
     cout << endl
@@ -119,6 +146,8 @@ void PrintCatalogMessage()
     cout << "Enter 4 to print data" << endl;
     cout << "Enter 5 to search in data" << endl;
     cout << "Enter 6 to exit" << endl;
+    cout << "Enter 7 to delete a node" << endl;
+
     cout << "Enter you Choice!!!!";
     cout << "-------------------------------------------------------" << endl
          << endl;
@@ -190,6 +219,14 @@ int SwitchFunctionCall(Node *&head)
     {
         cout << "Thanks for using!!!" << endl;
         return 0;
+    }
+    case 7:
+    {
+        cout << "Enter the index you want to delete!" << endl;
+        int index;
+        cin >> index;
+        DeleteData(head, index);
+        return 1;
     }
     default:
     {
