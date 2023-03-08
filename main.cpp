@@ -209,6 +209,7 @@ void PrintCatalogMessage()
     cout << "Enter 8 to undo" << endl;
     cout << "Enter 9 to redo" << endl;
     cout << "Enter 10 to save data" << endl;
+    cout << "Enter 11 to Open file data" << endl;
 
     cout << "Enter you Choice!!!!";
     cout << "-------------------------------------------------------" << endl
@@ -228,6 +229,44 @@ void SaveData(Node *&head, string file)
         MyFile(fileName);
     MyFile << data;
     MyFile.close();
+}
+void CheckSave(Node *&head)
+{
+    cout << "Want to save the existing file?" << endl;
+    cout << "Enter 1 to save and enter 2 to discard" << endl;
+    int condition;
+    cin >> condition;
+    switch (condition)
+    {
+    case 1:
+    {
+        string file;
+        cout << "Enter the file name!" << endl;
+        cin >> file;
+        SaveData(head, file);
+        break;
+    }
+    case 2:
+        return;
+    default:
+        break;
+    }
+}
+void OpenFile(Node *&head, string fileName)
+{
+    string text;
+    if (head != NULL)
+    {
+        CheckSave(head);
+    }
+    head = NULL;
+    ifstream
+        MyReadFile(fileName);
+    while (getline(MyReadFile, text))
+    {
+        InsertData1(head, text);
+    }
+    MyReadFile.close();
 }
 int SwitchFunctionCall(Node *&head, stack<Node *> &undo, stack<Node *> &redo)
 {
@@ -325,13 +364,14 @@ int SwitchFunctionCall(Node *&head, stack<Node *> &undo, stack<Node *> &redo)
         SaveData(head, fileName);
         return 1;
     }
-      case 11:
+    case 11:
     {
 
         cout << "Enter the file name to open file!!" << endl;
         string fileName;
+        cout << "Enter the complete file name" << endl;
         cin >> fileName;
-      //OpenFile(head,fileName)
+        OpenFile(head, fileName);
         return 1;
     }
     default:
