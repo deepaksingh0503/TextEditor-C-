@@ -13,8 +13,7 @@ public:
         this->next = NULL;
     }
 };
-
-void InsertData(Node *&head, string data)
+void InsertData1(Node *&head, string data)
 {
 
     Node *node = new Node(data);
@@ -31,8 +30,67 @@ void InsertData(Node *&head, string data)
 
     temp->next = node;
 }
+Node *copyList(Node *head)
+{
+    Node *newHead = NULL;
+    Node *temp = head;
+    while (temp != NULL)
+    {
+        string data = temp->data;
+        InsertData1(newHead, data);
+        temp = temp->next;
+    }
+    return newHead;
+}
+void Undo(Node *&head, stack<Node *> &redo, stack<Node *> &undo)
+{
+    Node *newHead = copyList(head);
+    if (undo.empty())
+    {
+        cout << "Cannot do undo more" << endl;
+    }
+    else
+    {
+        redo.push(newHead);
+        head = undo.top();
+        undo.pop();
+    }
+}
+void Redo(Node *&head, stack<Node *> &redo)
+{
+    if (redo.empty())
+    {
+        cout << "cannot redo more!!" << endl;
+        return;
+    }
+    head = redo.top();
+    redo.pop();
+}
+void addToStack(Node *&head, stack<Node *> &undo)
+{
+    Node *newNode = copyList(head);
+    undo.push(newNode);
+}
+void InsertData(Node *&head, string data, stack<Node *> &undo)
+{
 
-void UpdateData(Node *&head, int index, string data)
+    Node *node = new Node(data);
+
+    addToStack(head, undo);
+    if (head == NULL)
+    {
+        head = node;
+        return;
+    }
+    Node *temp = head;
+    while (temp->next != NULL)
+    {
+        temp = temp->next;
+    }
+
+    temp->next = node;
+}
+void UpdateData(Node *&head, int index, string data, stack<Node *> &undo)
 {
 
     Node *temp = head;
@@ -41,6 +99,8 @@ void UpdateData(Node *&head, int index, string data)
         cout << "There is no data!!!!\nFirst insert some data to  update it!" << endl;
         return;
     }
+    addToStack(head, undo);
+
     while (--index)
     {
         temp = temp->next;
@@ -53,7 +113,6 @@ void UpdateData(Node *&head, int index, string data)
 
     temp->data = data;
 }
-
 void SearchInData(Node *&head, string dataToSearch)
 {
     if (head == NULL)
@@ -72,8 +131,7 @@ void SearchInData(Node *&head, string dataToSearch)
         temp = temp->next;
     }
 }
-
-void AppendData(Node *&head, string data, int index)
+void AppendData(Node *&head, string data, int index, stack<Node *> &undo)
 {
     Node *temp = head;
     if (head == NULL)
@@ -81,6 +139,8 @@ void AppendData(Node *&head, string data, int index)
         cout << "There is no data!!!!\nFirst insert some data to  update it!" << endl;
         return;
     }
+    addToStack(head, undo);
+
     while (--index)
     {
         temp = temp->next;
@@ -93,7 +153,6 @@ void AppendData(Node *&head, string data, int index)
 
     temp->data = temp->data + data;
 }
-
 void PrintData(Node *&head)
 {
     if (head == NULL)
@@ -108,9 +167,10 @@ void PrintData(Node *&head)
         temp = temp->next;
     }
 }
-
-void DeleteData(Node *&head, int index)
+void DeleteData(Node *&head, int index, stack<Node *> &undo)
 {
+    addToStack(head, undo);
+
     if (index == 1)
     {
         Node *temp = head;
@@ -135,7 +195,6 @@ void DeleteData(Node *&head, int index)
         delete curr;
     }
 }
-
 void PrintCatalogMessage()
 {
     cout << endl
@@ -147,13 +206,30 @@ void PrintCatalogMessage()
     cout << "Enter 5 to search in data" << endl;
     cout << "Enter 6 to exit" << endl;
     cout << "Enter 7 to delete a node" << endl;
+    cout << "Enter 8 to undo" << endl;
+    cout << "Enter 9 to redo" << endl;
+    cout << "Enter 10 to save data" << endl;
 
     cout << "Enter you Choice!!!!";
     cout << "-------------------------------------------------------" << endl
          << endl;
 }
-
-int SwitchFunctionCall(Node *&head)
+void SaveData(Node *&head, string file)
+{
+    string fileName = file + ".txt";
+    Node *temp = head;
+    string data;
+    while (temp != NULL)
+    {
+        data = data + "\n" + temp->data;
+        temp = temp->next;
+    }
+    ofstream
+        MyFile(fileName);
+    MyFile << data;
+    MyFile.close();
+}
+int SwitchFunctionCall(Node *&head, stack<Node *> &undo, stack<Node *> &redo)
 {
     int choice;
     cin >> choice;
@@ -168,7 +244,7 @@ int SwitchFunctionCall(Node *&head)
         string temp;
         getline(cin, temp);
         getline(cin, data);
-        InsertData(head, data);
+        InsertData(head, data, undo);
         return 1;
     }
 
@@ -183,7 +259,7 @@ int SwitchFunctionCall(Node *&head)
         int index;
 
         cin >> index;
-        UpdateData(head, index, data);
+        UpdateData(head, index, data, undo);
         return 1;
     }
 
@@ -198,7 +274,7 @@ int SwitchFunctionCall(Node *&head)
         int index;
 
         cin >> index;
-        AppendData(head, data, index);
+        AppendData(head, data, index, undo);
         return 1;
     }
     case 4:
@@ -225,7 +301,37 @@ int SwitchFunctionCall(Node *&head)
         cout << "Enter the index you want to delete!" << endl;
         int index;
         cin >> index;
-        DeleteData(head, index);
+        DeleteData(head, index, undo);
+        return 1;
+    }
+    case 8:
+    {
+
+        Undo(head, redo, undo);
+        return 1;
+    }
+    case 9:
+    {
+
+        Redo(head, redo);
+        return 1;
+    }
+    case 10:
+    {
+
+        cout << "Enter the file name!!" << endl;
+        string fileName;
+        cin >> fileName;
+        SaveData(head, fileName);
+        return 1;
+    }
+      case 11:
+    {
+
+        cout << "Enter the file name to open file!!" << endl;
+        string fileName;
+        cin >> fileName;
+      //OpenFile(head,fileName)
         return 1;
     }
     default:
@@ -235,17 +341,18 @@ int SwitchFunctionCall(Node *&head)
     }
     }
 }
-
 int main()
 {
     Node *head = NULL;
+    stack<Node *> redo;
+    stack<Node *> undo;
     cout << "Heyyy Welcome to Text Editor!!!!!!!"
          << endl;
     int condition = 1;
     while (condition)
     {
         PrintCatalogMessage();
-        condition = SwitchFunctionCall(head);
+        condition = SwitchFunctionCall(head, undo, redo);
     }
     return 0;
 }
